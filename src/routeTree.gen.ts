@@ -9,14 +9,24 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as OfferRouteImport } from './routes/offer'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as CustomRouteImport } from './routes/custom'
 import { Route as ContactsRouteImport } from './routes/contacts'
 import { Route as CatalogRouteImport } from './routes/catalog'
+import { Route as AdminRouteImport } from './routes/_admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProductsSlugRouteImport } from './routes/products.$slug'
+import { Route as AdminProductsRouteImport } from './routes/_admin/products'
+import { Route as AdminLeadsRouteImport } from './routes/_admin/leads'
 
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
@@ -25,6 +35,11 @@ const PrivacyRoute = PrivacyRouteImport.update({
 const OfferRoute = OfferRouteImport.update({
   id: '/offer',
   path: '/offer',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CustomRoute = CustomRouteImport.update({
@@ -42,6 +57,10 @@ const CatalogRoute = CatalogRouteImport.update({
   path: '/catalog',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/_admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -52,14 +71,28 @@ const ProductsSlugRoute = ProductsSlugRouteImport.update({
   path: '/products/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminProductsRoute = AdminProductsRouteImport.update({
+  id: '/products',
+  path: '/products',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminLeadsRoute = AdminLeadsRouteImport.update({
+  id: '/leads',
+  path: '/leads',
+  getParentRoute: () => AdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/catalog': typeof CatalogRoute
   '/contacts': typeof ContactsRoute
   '/custom': typeof CustomRoute
+  '/login': typeof LoginRoute
   '/offer': typeof OfferRoute
   '/privacy': typeof PrivacyRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/leads': typeof AdminLeadsRoute
+  '/products': typeof AdminProductsRoute
   '/products/$slug': typeof ProductsSlugRoute
 }
 export interface FileRoutesByTo {
@@ -67,18 +100,27 @@ export interface FileRoutesByTo {
   '/catalog': typeof CatalogRoute
   '/contacts': typeof ContactsRoute
   '/custom': typeof CustomRoute
+  '/login': typeof LoginRoute
   '/offer': typeof OfferRoute
   '/privacy': typeof PrivacyRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/leads': typeof AdminLeadsRoute
+  '/products': typeof AdminProductsRoute
   '/products/$slug': typeof ProductsSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_admin': typeof AdminRouteWithChildren
   '/catalog': typeof CatalogRoute
   '/contacts': typeof ContactsRoute
   '/custom': typeof CustomRoute
+  '/login': typeof LoginRoute
   '/offer': typeof OfferRoute
   '/privacy': typeof PrivacyRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/_admin/leads': typeof AdminLeadsRoute
+  '/_admin/products': typeof AdminProductsRoute
   '/products/$slug': typeof ProductsSlugRoute
 }
 export interface FileRouteTypes {
@@ -88,8 +130,12 @@ export interface FileRouteTypes {
     | '/catalog'
     | '/contacts'
     | '/custom'
+    | '/login'
     | '/offer'
     | '/privacy'
+    | '/sitemap.xml'
+    | '/leads'
+    | '/products'
     | '/products/$slug'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -97,32 +143,51 @@ export interface FileRouteTypes {
     | '/catalog'
     | '/contacts'
     | '/custom'
+    | '/login'
     | '/offer'
     | '/privacy'
+    | '/sitemap.xml'
+    | '/leads'
+    | '/products'
     | '/products/$slug'
   id:
     | '__root__'
     | '/'
+    | '/_admin'
     | '/catalog'
     | '/contacts'
     | '/custom'
+    | '/login'
     | '/offer'
     | '/privacy'
+    | '/sitemap.xml'
+    | '/_admin/leads'
+    | '/_admin/products'
     | '/products/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRouteWithChildren
   CatalogRoute: typeof CatalogRoute
   ContactsRoute: typeof ContactsRoute
   CustomRoute: typeof CustomRoute
+  LoginRoute: typeof LoginRoute
   OfferRoute: typeof OfferRoute
   PrivacyRoute: typeof PrivacyRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   ProductsSlugRoute: typeof ProductsSlugRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/privacy': {
       id: '/privacy'
       path: '/privacy'
@@ -135,6 +200,13 @@ declare module '@tanstack/react-router' {
       path: '/offer'
       fullPath: '/offer'
       preLoaderRoute: typeof OfferRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/custom': {
@@ -158,6 +230,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CatalogRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_admin': {
+      id: '/_admin'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -172,16 +251,45 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProductsSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_admin/products': {
+      id: '/_admin/products'
+      path: '/products'
+      fullPath: '/products'
+      preLoaderRoute: typeof AdminProductsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/_admin/leads': {
+      id: '/_admin/leads'
+      path: '/leads'
+      fullPath: '/leads'
+      preLoaderRoute: typeof AdminLeadsRouteImport
+      parentRoute: typeof AdminRoute
+    }
   }
 }
 
+interface AdminRouteChildren {
+  AdminLeadsRoute: typeof AdminLeadsRoute
+  AdminProductsRoute: typeof AdminProductsRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminLeadsRoute: AdminLeadsRoute,
+  AdminProductsRoute: AdminProductsRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRouteWithChildren,
   CatalogRoute: CatalogRoute,
   ContactsRoute: ContactsRoute,
   CustomRoute: CustomRoute,
+  LoginRoute: LoginRoute,
   OfferRoute: OfferRoute,
   PrivacyRoute: PrivacyRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   ProductsSlugRoute: ProductsSlugRoute,
 }
 export const routeTree = rootRouteImport
