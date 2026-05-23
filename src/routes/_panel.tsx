@@ -25,7 +25,7 @@ function AdminLayout() {
         data: { session },
       } = await supabase.auth.getSession();
       if (!session) {
-        if (!cancelled) navigate({ to: "/login" });
+        if (!cancelled) navigate({ to: "/admin" });
         return;
       }
       let data: { isAdmin: boolean } | null = null;
@@ -49,7 +49,7 @@ function AdminLayout() {
 
   const signOut = async () => {
     await supabase.auth.signOut();
-    navigate({ to: "/login" });
+    navigate({ to: "/admin" });
   };
 
   if (state === "loading") {
@@ -75,10 +75,10 @@ function AdminLayout() {
         <div className="flex items-center gap-6">
           <h1 className="text-lg font-semibold tracking-tight">Админ-панель</h1>
           <nav className="flex items-center gap-4 text-sm text-muted-foreground">
-            <Link to="/_panel/products" className="hover:text-foreground" activeProps={{ className: "text-foreground" }}>
+            <Link to="/products" className="hover:text-foreground" activeProps={{ className: "text-foreground" }}>
               Решения
             </Link>
-            <Link to="/_panel/leads" className="hover:text-foreground" activeProps={{ className: "text-foreground" }}>
+            <Link to="/leads" className="hover:text-foreground" activeProps={{ className: "text-foreground" }}>
               Заявки
             </Link>
           </nav>
