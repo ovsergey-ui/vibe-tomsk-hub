@@ -1,6 +1,7 @@
 import { createFileRoute, Outlet, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { getCurrentAdminAccess } from "@/lib/admin-auth.functions";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/_panel")({
@@ -27,14 +28,15 @@ function AdminLayout() {
         if (!cancelled) navigate({ to: "/login" });
         return;
       }
-      const { data, error } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", session.user.id)
-        .eq("role", "admin")
-        .maybeSingle();
+      let data: { isAdmin: boolean } | null = null;
+      let error: unknown = null;
+      try {
+        data = await getCurrentAdminAccess();
+      } catch (err) {
+        error = err;
+      }
       if (cancelled) return;
-      if (error || !data) {
+      if (error || !data?.isAdmin) {
         setState("denied");
         return;
       }
