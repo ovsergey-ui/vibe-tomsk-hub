@@ -13,13 +13,15 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useLeadDialog } from "@/lib/lead-dialog";
 import { leadSchema } from "@/lib/schema";
-import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
+import { submitLead } from "@/lib/leads.functions";
 
 export function LeadDialog() {
   const { open, context, close } = useLeadDialog();
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({ name: "", telegram: "", email: "", message: "" });
   const [error, setError] = useState<string | null>(null);
+  const submitLeadFn = useServerFn(submitLead);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,19 +36,24 @@ export function LeadDialog() {
       return;
     }
     setLoading(true);
-    const { error: err } = await supabase.from("leads").insert({
-      name: parsed.data.name,
-      telegram: parsed.data.telegram || null,
-      email: parsed.data.email || null,
-      message: parsed.data.message || "",
-      product_id: parsed.data.product_id ?? null,
-      source: parsed.data.source,
-    });
-    setLoading(false);
-    if (err) {
+    try {
+      await submitLeadFn({
+        data: {
+          name: parsed.data.name,
+          telegram: parsed.data.telegram || null,
+          email: parsed.data.email || null,
+          message: parsed.data.message || "",
+          product_id: parsed.data.product_id ?? null,
+          source: parsed.data.source,
+        },
+      });
+    } catch (err) {
+      console.error(err);
+      setLoading(false);
       toast.error("Не удалось отправить заявку. Попробуйте ещё раз.");
       return;
     }
+    setLoading(false);
     toast.success("Заявка отправлена. Свяжемся в ближайшее время.");
     setForm({ name: "", telegram: "", email: "", message: "" });
     close();
