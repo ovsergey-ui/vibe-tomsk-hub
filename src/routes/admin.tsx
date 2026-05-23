@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
+import { verifyAdminLogin } from "@/lib/admin-auth.functions";
 import { toast } from "sonner";
 
 const ADMIN_EMAIL = "sergovinst@gmail.com";
@@ -40,14 +41,9 @@ function AdminLoginPage() {
       toast.error("Неверный логин или пароль.");
       return;
     }
-    const { data: role } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", data.user.id)
-      .eq("role", "admin")
-      .maybeSingle();
+    const role = await verifyAdminLogin({ data: { userId: data.user.id } });
     setLoading(false);
-    if (!role) {
+    if (!role.isAdmin) {
       await supabase.auth.signOut();
       toast.error("У аккаунта нет прав администратора.");
       return;
