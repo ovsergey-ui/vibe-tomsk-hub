@@ -73,10 +73,10 @@ function AdminLayout() {
         <div className="flex items-center gap-6">
           <h1 className="text-lg font-semibold tracking-tight">Админ-панель</h1>
           <nav className="flex items-center gap-4 text-sm text-muted-foreground">
-            <Link to="/_admin/products" className="hover:text-foreground" activeProps={{ className: "text-foreground" }}>
+            <Link to="/_panel/products" className="hover:text-foreground" activeProps={{ className: "text-foreground" }}>
               Решения
             </Link>
-            <Link to="/_admin/leads" className="hover:text-foreground" activeProps={{ className: "text-foreground" }}>
+            <Link to="/_panel/leads" className="hover:text-foreground" activeProps={{ className: "text-foreground" }}>
               Заявки
             </Link>
           </nav>
