@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/_admin/leads")({
+export const Route = createFileRoute("/_panel/leads")({
   component: AdminLeadsPage,
 });
 
