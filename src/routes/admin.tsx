@@ -53,7 +53,7 @@ function AdminLoginPage() {
       return;
     }
     toast.success("Вход выполнен");
-    navigate({ to: "/_admin/products" });
+    navigate({ to: "/_panel/products" });
   };
 
   return (

@@ -24,7 +24,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 
-export const Route = createFileRoute("/_admin/products")({
+export const Route = createFileRoute("/_panel/products")({
   component: AdminProductsPage,
 });
 
