@@ -76,13 +76,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "tomsk.ai — AI-студия в Томске" },
+      { title: "tomsk.ai — AI-студия" },
       {
         name: "description",
         content:
           "Telegram-боты, AI-инструменты и автоматизация для бизнеса. Быстрый запуск, фокус на результат.",
       },
-      { property: "og:title", content: "tomsk.ai — AI-студия в Томске" },
+      { property: "og:title", content: "tomsk.ai — AI-студия" },
       {
         property: "og:description",
         content:
@@ -91,6 +91,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:type", content: "website" },
       { property: "og:site_name", content: "tomsk.ai" },
       { name: "twitter:card", content: "summary" },
+      { name: "twitter:title", content: "tomsk.ai — AI-студия" },
+      { name: "description", content: "Создание сайтов, приложений, ботов, автоматизации процессов" },
+      { property: "og:description", content: "Создание сайтов, приложений, ботов, автоматизации процессов" },
+      { name: "twitter:description", content: "Создание сайтов, приложений, ботов, автоматизации процессов" },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/dad711f0-f63b-49c1-9112-4f26bedb4959" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/dad711f0-f63b-49c1-9112-4f26bedb4959" },
     ],
     links: [
       {
