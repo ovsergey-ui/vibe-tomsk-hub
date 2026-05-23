@@ -17,11 +17,11 @@ import { Route as CustomRouteImport } from './routes/custom'
 import { Route as ContactsRouteImport } from './routes/contacts'
 import { Route as CatalogRouteImport } from './routes/catalog'
 import { Route as AdminRouteImport } from './routes/admin'
-import { Route as AdminRouteImport } from './routes/_admin'
+import { Route as PanelRouteImport } from './routes/_panel'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProductsSlugRouteImport } from './routes/products.$slug'
-import { Route as AdminProductsRouteImport } from './routes/_admin/products'
-import { Route as AdminLeadsRouteImport } from './routes/_admin/leads'
+import { Route as PanelProductsRouteImport } from './routes/_panel/products'
+import { Route as PanelLeadsRouteImport } from './routes/_panel/leads'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
@@ -63,8 +63,8 @@ const AdminRoute = AdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminRoute = AdminRouteImport.update({
-  id: '/_admin',
+const PanelRoute = PanelRouteImport.update({
+  id: '/_panel',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -77,15 +77,15 @@ const ProductsSlugRoute = ProductsSlugRouteImport.update({
   path: '/products/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminProductsRoute = AdminProductsRouteImport.update({
+const PanelProductsRoute = PanelProductsRouteImport.update({
   id: '/products',
   path: '/products',
-  getParentRoute: () => AdminRoute,
+  getParentRoute: () => PanelRoute,
 } as any)
-const AdminLeadsRoute = AdminLeadsRouteImport.update({
+const PanelLeadsRoute = PanelLeadsRouteImport.update({
   id: '/leads',
   path: '/leads',
-  getParentRoute: () => AdminRoute,
+  getParentRoute: () => PanelRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -98,8 +98,8 @@ export interface FileRoutesByFullPath {
   '/offer': typeof OfferRoute
   '/privacy': typeof PrivacyRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/leads': typeof AdminLeadsRoute
-  '/products': typeof AdminProductsRoute
+  '/leads': typeof PanelLeadsRoute
+  '/products': typeof PanelProductsRoute
   '/products/$slug': typeof ProductsSlugRoute
 }
 export interface FileRoutesByTo {
@@ -112,14 +112,14 @@ export interface FileRoutesByTo {
   '/offer': typeof OfferRoute
   '/privacy': typeof PrivacyRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/leads': typeof AdminLeadsRoute
-  '/products': typeof AdminProductsRoute
+  '/leads': typeof PanelLeadsRoute
+  '/products': typeof PanelProductsRoute
   '/products/$slug': typeof ProductsSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/_admin': typeof AdminRouteWithChildren
+  '/_panel': typeof PanelRouteWithChildren
   '/admin': typeof AdminRoute
   '/catalog': typeof CatalogRoute
   '/contacts': typeof ContactsRoute
@@ -128,8 +128,8 @@ export interface FileRoutesById {
   '/offer': typeof OfferRoute
   '/privacy': typeof PrivacyRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/_admin/leads': typeof AdminLeadsRoute
-  '/_admin/products': typeof AdminProductsRoute
+  '/_panel/leads': typeof PanelLeadsRoute
+  '/_panel/products': typeof PanelProductsRoute
   '/products/$slug': typeof ProductsSlugRoute
 }
 export interface FileRouteTypes {
@@ -164,7 +164,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
-    | '/_admin'
+    | '/_panel'
     | '/admin'
     | '/catalog'
     | '/contacts'
@@ -173,14 +173,14 @@ export interface FileRouteTypes {
     | '/offer'
     | '/privacy'
     | '/sitemap.xml'
-    | '/_admin/leads'
-    | '/_admin/products'
+    | '/_panel/leads'
+    | '/_panel/products'
     | '/products/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AdminRoute: typeof AdminRouteWithChildren
+  PanelRoute: typeof PanelRouteWithChildren
   AdminRoute: typeof AdminRoute
   CatalogRoute: typeof CatalogRoute
   ContactsRoute: typeof ContactsRoute
@@ -250,11 +250,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_admin': {
-      id: '/_admin'
+    '/_panel': {
+      id: '/_panel'
       path: ''
       fullPath: '/'
-      preLoaderRoute: typeof AdminRouteImport
+      preLoaderRoute: typeof PanelRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -271,38 +271,38 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProductsSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_admin/products': {
-      id: '/_admin/products'
+    '/_panel/products': {
+      id: '/_panel/products'
       path: '/products'
       fullPath: '/products'
-      preLoaderRoute: typeof AdminProductsRouteImport
-      parentRoute: typeof AdminRoute
+      preLoaderRoute: typeof PanelProductsRouteImport
+      parentRoute: typeof PanelRoute
     }
-    '/_admin/leads': {
-      id: '/_admin/leads'
+    '/_panel/leads': {
+      id: '/_panel/leads'
       path: '/leads'
       fullPath: '/leads'
-      preLoaderRoute: typeof AdminLeadsRouteImport
-      parentRoute: typeof AdminRoute
+      preLoaderRoute: typeof PanelLeadsRouteImport
+      parentRoute: typeof PanelRoute
     }
   }
 }
 
-interface AdminRouteChildren {
-  AdminLeadsRoute: typeof AdminLeadsRoute
-  AdminProductsRoute: typeof AdminProductsRoute
+interface PanelRouteChildren {
+  PanelLeadsRoute: typeof PanelLeadsRoute
+  PanelProductsRoute: typeof PanelProductsRoute
 }
 
-const AdminRouteChildren: AdminRouteChildren = {
-  AdminLeadsRoute: AdminLeadsRoute,
-  AdminProductsRoute: AdminProductsRoute,
+const PanelRouteChildren: PanelRouteChildren = {
+  PanelLeadsRoute: PanelLeadsRoute,
+  PanelProductsRoute: PanelProductsRoute,
 }
 
-const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+const PanelRouteWithChildren = PanelRoute._addFileChildren(PanelRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AdminRoute: AdminRouteWithChildren,
+  PanelRoute: PanelRouteWithChildren,
   AdminRoute: AdminRoute,
   CatalogRoute: CatalogRoute,
   ContactsRoute: ContactsRoute,
