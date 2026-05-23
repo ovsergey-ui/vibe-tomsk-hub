@@ -19,6 +19,7 @@ import { Route as CatalogRouteImport } from './routes/catalog'
 import { Route as AdminRouteImport } from './routes/_admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProductsSlugRouteImport } from './routes/products.$slug'
+import { Route as AdminUsersRouteImport } from './routes/_admin/users'
 import { Route as AdminProductsRouteImport } from './routes/_admin/products'
 import { Route as AdminLeadsRouteImport } from './routes/_admin/leads'
 
@@ -71,6 +72,11 @@ const ProductsSlugRoute = ProductsSlugRouteImport.update({
   path: '/products/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminUsersRoute = AdminUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminProductsRoute = AdminProductsRouteImport.update({
   id: '/products',
   path: '/products',
@@ -93,6 +99,7 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/leads': typeof AdminLeadsRoute
   '/products': typeof AdminProductsRoute
+  '/users': typeof AdminUsersRoute
   '/products/$slug': typeof ProductsSlugRoute
 }
 export interface FileRoutesByTo {
@@ -106,6 +113,7 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/leads': typeof AdminLeadsRoute
   '/products': typeof AdminProductsRoute
+  '/users': typeof AdminUsersRoute
   '/products/$slug': typeof ProductsSlugRoute
 }
 export interface FileRoutesById {
@@ -121,6 +129,7 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/_admin/leads': typeof AdminLeadsRoute
   '/_admin/products': typeof AdminProductsRoute
+  '/_admin/users': typeof AdminUsersRoute
   '/products/$slug': typeof ProductsSlugRoute
 }
 export interface FileRouteTypes {
@@ -136,6 +145,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/leads'
     | '/products'
+    | '/users'
     | '/products/$slug'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -149,6 +159,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/leads'
     | '/products'
+    | '/users'
     | '/products/$slug'
   id:
     | '__root__'
@@ -163,6 +174,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/_admin/leads'
     | '/_admin/products'
+    | '/_admin/users'
     | '/products/$slug'
   fileRoutesById: FileRoutesById
 }
@@ -251,6 +263,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProductsSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_admin/users': {
+      id: '/_admin/users'
+      path: '/users'
+      fullPath: '/users'
+      preLoaderRoute: typeof AdminUsersRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/_admin/products': {
       id: '/_admin/products'
       path: '/products'
@@ -271,11 +290,13 @@ declare module '@tanstack/react-router' {
 interface AdminRouteChildren {
   AdminLeadsRoute: typeof AdminLeadsRoute
   AdminProductsRoute: typeof AdminProductsRoute
+  AdminUsersRoute: typeof AdminUsersRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminLeadsRoute: AdminLeadsRoute,
   AdminProductsRoute: AdminProductsRoute,
+  AdminUsersRoute: AdminUsersRoute,
 }
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
@@ -295,13 +316,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

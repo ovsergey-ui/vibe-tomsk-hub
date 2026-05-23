@@ -79,6 +79,9 @@ function AdminLayout() {
             <Link to="/_admin/leads" className="hover:text-foreground" activeProps={{ className: "text-foreground" }}>
               Заявки
             </Link>
+            <Link to={"/_admin/users" as never} className="hover:text-foreground" activeProps={{ className: "text-foreground" }}>
+              Пользователи
+            </Link>
           </nav>
         </div>
         <Button variant="outline" size="sm" onClick={signOut}>
