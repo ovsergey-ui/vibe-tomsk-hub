@@ -23,6 +23,7 @@ import { Route as ProductsSlugRouteImport } from './routes/products.$slug'
 import { Route as PanelProductsRouteImport } from './routes/_panel/products'
 import { Route as PanelLeadsRouteImport } from './routes/_panel/leads'
 import { Route as PanelDashboardRouteImport } from './routes/_panel/dashboard'
+import { Route as PanelChatsRouteImport } from './routes/_panel/chats'
 import { Route as PanelCategoriesRouteImport } from './routes/_panel/categories'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
@@ -94,6 +95,11 @@ const PanelDashboardRoute = PanelDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => PanelRoute,
 } as any)
+const PanelChatsRoute = PanelChatsRouteImport.update({
+  id: '/chats',
+  path: '/chats',
+  getParentRoute: () => PanelRoute,
+} as any)
 const PanelCategoriesRoute = PanelCategoriesRouteImport.update({
   id: '/categories',
   path: '/categories',
@@ -111,6 +117,7 @@ export interface FileRoutesByFullPath {
   '/privacy': typeof PrivacyRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/categories': typeof PanelCategoriesRoute
+  '/chats': typeof PanelChatsRoute
   '/dashboard': typeof PanelDashboardRoute
   '/leads': typeof PanelLeadsRoute
   '/products': typeof PanelProductsRoute
@@ -127,6 +134,7 @@ export interface FileRoutesByTo {
   '/privacy': typeof PrivacyRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/categories': typeof PanelCategoriesRoute
+  '/chats': typeof PanelChatsRoute
   '/dashboard': typeof PanelDashboardRoute
   '/leads': typeof PanelLeadsRoute
   '/products': typeof PanelProductsRoute
@@ -145,6 +153,7 @@ export interface FileRoutesById {
   '/privacy': typeof PrivacyRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/_panel/categories': typeof PanelCategoriesRoute
+  '/_panel/chats': typeof PanelChatsRoute
   '/_panel/dashboard': typeof PanelDashboardRoute
   '/_panel/leads': typeof PanelLeadsRoute
   '/_panel/products': typeof PanelProductsRoute
@@ -163,6 +172,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/sitemap.xml'
     | '/categories'
+    | '/chats'
     | '/dashboard'
     | '/leads'
     | '/products'
@@ -179,6 +189,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/sitemap.xml'
     | '/categories'
+    | '/chats'
     | '/dashboard'
     | '/leads'
     | '/products'
@@ -196,6 +207,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/sitemap.xml'
     | '/_panel/categories'
+    | '/_panel/chats'
     | '/_panel/dashboard'
     | '/_panel/leads'
     | '/_panel/products'
@@ -316,6 +328,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PanelDashboardRouteImport
       parentRoute: typeof PanelRoute
     }
+    '/_panel/chats': {
+      id: '/_panel/chats'
+      path: '/chats'
+      fullPath: '/chats'
+      preLoaderRoute: typeof PanelChatsRouteImport
+      parentRoute: typeof PanelRoute
+    }
     '/_panel/categories': {
       id: '/_panel/categories'
       path: '/categories'
@@ -328,6 +347,7 @@ declare module '@tanstack/react-router' {
 
 interface PanelRouteChildren {
   PanelCategoriesRoute: typeof PanelCategoriesRoute
+  PanelChatsRoute: typeof PanelChatsRoute
   PanelDashboardRoute: typeof PanelDashboardRoute
   PanelLeadsRoute: typeof PanelLeadsRoute
   PanelProductsRoute: typeof PanelProductsRoute
@@ -335,6 +355,7 @@ interface PanelRouteChildren {
 
 const PanelRouteChildren: PanelRouteChildren = {
   PanelCategoriesRoute: PanelCategoriesRoute,
+  PanelChatsRoute: PanelChatsRoute,
   PanelDashboardRoute: PanelDashboardRoute,
   PanelLeadsRoute: PanelLeadsRoute,
   PanelProductsRoute: PanelProductsRoute,

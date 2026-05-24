@@ -33,6 +33,19 @@ function AdminLayout() {
     },
   });
 
+  const { data: openTicketsCount } = useQuery({
+    queryKey: ["admin-chats-escalated-count"],
+    enabled: state === "ok",
+    refetchInterval: 15_000,
+    queryFn: async () => {
+      const { count } = await supabase
+        .from("chat_sessions")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "escalated");
+      return count ?? 0;
+    },
+  });
+
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -101,6 +114,14 @@ function AdminLayout() {
                 {newLeadsCount ? (
                   <span className="ml-1.5 rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-semibold leading-none text-primary-foreground">
                     {newLeadsCount}
+                  </span>
+                ) : null}
+              </NavLink>
+              <NavLink to="/chats">
+                Чаты
+                {openTicketsCount ? (
+                  <span className="ml-1.5 rounded-full bg-amber-500 px-1.5 py-0.5 text-[10px] font-semibold leading-none text-white">
+                    {openTicketsCount}
                   </span>
                 ) : null}
               </NavLink>
