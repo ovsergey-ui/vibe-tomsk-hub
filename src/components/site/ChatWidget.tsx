@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { Bot, Send, X } from "lucide-react";
+import { Bot, Send, X, Paperclip, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -28,6 +29,9 @@ export function ChatWidget() {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
+  const [pendingImage, setPendingImage] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
   const [form, setForm] = useState({ name: "", phone: "", consent: false });
   const [starting, setStarting] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -132,26 +136,55 @@ export function ChatWidget() {
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
     const text = input.trim();
-    if (!text || !sessionId || sending) return;
+    if ((!text && !pendingImage) || !sessionId || sending) return;
     setSending(true);
     setInput("");
+    const imageUrl = pendingImage;
+    setPendingImage(null);
     // optimistic
     setMessages((prev) => [
       ...prev,
       {
         id: `tmp-${Date.now()}`,
         role: "user",
-        content: text,
+        content: imageUrl ? `![image](${imageUrl})${text ? `\n${text}` : ""}` : text,
         created_at: new Date().toISOString(),
       },
     ]);
     try {
-      await sendFn({ data: { sessionId, content: text } });
+      await sendFn({ data: { sessionId, content: text, imageUrl: imageUrl ?? null } });
     } catch (err) {
       console.error(err);
       toast.error("Не удалось отправить сообщение");
     } finally {
       setSending(false);
+    }
+  };
+
+  const handleFile = async (file: File) => {
+    if (!file.type.startsWith("image/")) {
+      toast.error("Можно загружать только изображения");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Максимальный размер — 5 МБ");
+      return;
+    }
+    setUploading(true);
+    try {
+      const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+      const path = `chat/${sessionId}/${crypto.randomUUID()}.${ext}`;
+      const { error } = await supabase.storage
+        .from("chat-uploads")
+        .upload(path, file, { cacheControl: "3600", upsert: false });
+      if (error) throw error;
+      const { data } = supabase.storage.from("chat-uploads").getPublicUrl(path);
+      setPendingImage(data.publicUrl);
+    } catch (err) {
+      console.error(err);
+      toast.error("Не удалось загрузить картинку");
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -250,7 +283,42 @@ export function ChatWidget() {
                 )}
               </div>
               <form onSubmit={handleSend} className="border-t border-border bg-background/60 p-3">
+                {pendingImage && (
+                  <div className="mb-2 flex items-center gap-2 rounded-lg border border-border bg-muted/40 p-2">
+                    <img src={pendingImage} alt="вложение" className="h-12 w-12 rounded object-cover" />
+                    <div className="flex-1 text-xs text-muted-foreground">Картинка прикреплена</div>
+                    <button
+                      type="button"
+                      onClick={() => setPendingImage(null)}
+                      className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+                      aria-label="Убрать"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                )}
                 <div className="flex items-end gap-2">
+                  <input
+                    ref={fileRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const f = e.target.files?.[0];
+                      if (f) handleFile(f);
+                      e.target.value = "";
+                    }}
+                  />
+                  <Button
+                    type="button"
+                    size="icon"
+                    variant="ghost"
+                    onClick={() => fileRef.current?.click()}
+                    disabled={uploading || !!pendingImage}
+                    aria-label="Прикрепить картинку"
+                  >
+                    {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Paperclip className="h-4 w-4" />}
+                  </Button>
                   <Textarea
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
@@ -264,7 +332,7 @@ export function ChatWidget() {
                     rows={1}
                     className="min-h-[40px] max-h-32 resize-none"
                   />
-                  <Button type="submit" size="icon" disabled={sending || !input.trim()}>
+                  <Button type="submit" size="icon" disabled={sending || (!input.trim() && !pendingImage)}>
                     <Send className="h-4 w-4" />
                   </Button>
                 </div>
