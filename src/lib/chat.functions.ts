@@ -2,6 +2,13 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { buildSystemPrompt, callAI, escapeHtml, sendTelegram } from "@/lib/chat.server";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { resolveAdminAccess } from "@/lib/admin-auth.server";
+
+async function assertAdmin(userId: string) {
+  const { isAdmin } = await resolveAdminAccess(userId);
+  if (!isAdmin) throw new Error("Доступ запрещён");
+}
 
 const phoneRegex = /^[+\d][\d\s\-()]{5,}$/;
 
@@ -230,8 +237,10 @@ const adminSendInput = z.object({
 });
 
 export const sendAdminMessage = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((data) => adminSendInput.parse(data))
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
     const now = new Date().toISOString();
     const { data: session } = await supabaseAdmin
       .from("chat_sessions")
@@ -257,8 +266,10 @@ export const sendAdminMessage = createServerFn({ method: "POST" })
 const sessionIdInput = z.object({ sessionId: z.string().uuid() });
 
 export const closeChat = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((data) => sessionIdInput.parse(data))
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
     await supabaseAdmin
       .from("chat_sessions")
       .update({ status: "closed", updated_at: new Date().toISOString() })
@@ -267,8 +278,10 @@ export const closeChat = createServerFn({ method: "POST" })
   });
 
 export const returnChatToBot = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((data) => sessionIdInput.parse(data))
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
     await supabaseAdmin
       .from("chat_sessions")
       .update({ status: "bot", updated_at: new Date().toISOString() })
@@ -276,7 +289,10 @@ export const returnChatToBot = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
-export const listAdminChats = createServerFn({ method: "POST" }).handler(async () => {
+export const listAdminChats = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdmin(context.userId);
   const { data: sessions, error } = await supabaseAdmin
     .from("chat_sessions")
     .select("id,name,phone,status,created_at,last_message_at")
@@ -287,8 +303,10 @@ export const listAdminChats = createServerFn({ method: "POST" }).handler(async (
 });
 
 export const getAdminChatHistory = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((data) => sessionIdInput.parse(data))
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
     const { data: session } = await supabaseAdmin
       .from("chat_sessions")
       .select("id,name,phone,status,created_at")
