@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useLeadDialog } from "@/lib/lead-dialog";
 import { leadSchema } from "@/lib/schema";
 import { useServerFn } from "@tanstack/react-start";
@@ -19,7 +20,14 @@ import { submitLead } from "@/lib/leads.functions";
 export function LeadDialog() {
   const { open, context, close } = useLeadDialog();
   const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState({ name: "", telegram: "", email: "", message: "" });
+  const [form, setForm] = useState({
+    name: "",
+    phone: "",
+    telegram: "",
+    email: "",
+    message: "",
+    consent: false,
+  });
   const [error, setError] = useState<string | null>(null);
   const submitLeadFn = useServerFn(submitLead);
 
@@ -40,6 +48,7 @@ export function LeadDialog() {
       await submitLeadFn({
         data: {
           name: parsed.data.name,
+          phone: parsed.data.phone,
           telegram: parsed.data.telegram || null,
           email: parsed.data.email || null,
           message: parsed.data.message || "",
@@ -55,7 +64,7 @@ export function LeadDialog() {
     }
     setLoading(false);
     toast.success("Заявка отправлена. Свяжемся в ближайшее время.");
-    setForm({ name: "", telegram: "", email: "", message: "" });
+    setForm({ name: "", phone: "", telegram: "", email: "", message: "", consent: false });
     close();
   };
 
@@ -71,15 +80,28 @@ export function LeadDialog() {
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-1.5">
-            <Label htmlFor="lead-name">Имя</Label>
-            <Input
-              id="lead-name"
-              required
-              value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
-              placeholder="Иван"
-            />
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <Label htmlFor="lead-name">Имя *</Label>
+              <Input
+                id="lead-name"
+                required
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                placeholder="Иван"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="lead-phone">Телефон *</Label>
+              <Input
+                id="lead-phone"
+                required
+                type="tel"
+                value={form.phone}
+                onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                placeholder="+7 999 123-45-67"
+              />
+            </div>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
@@ -112,14 +134,25 @@ export function LeadDialog() {
               placeholder="Коротко о задаче и контексте"
             />
           </div>
+          <div className="flex items-start gap-2.5">
+            <Checkbox
+              id="lead-consent"
+              checked={form.consent}
+              onCheckedChange={(v) => setForm({ ...form, consent: v === true })}
+              className="mt-0.5"
+            />
+            <Label htmlFor="lead-consent" className="text-xs text-muted-foreground font-normal leading-relaxed cursor-pointer">
+              Я согласен с{" "}
+              <a href="/privacy" target="_blank" rel="noreferrer" className="underline underline-offset-2 text-foreground">
+                политикой конфиденциальности
+              </a>{" "}
+              и обработкой персональных данных
+            </Label>
+          </div>
           {error && <p className="text-sm text-destructive">{error}</p>}
-          <Button type="submit" className="w-full" disabled={loading}>
+          <Button type="submit" className="w-full" disabled={loading || !form.consent}>
             {loading ? "Отправляем…" : "Отправить заявку"}
           </Button>
-          <p className="text-xs text-muted-foreground">
-            Отправляя форму, вы соглашаетесь с{" "}
-            <a href="/privacy" className="underline underline-offset-2">политикой конфиденциальности</a>.
-          </p>
         </form>
       </DialogContent>
     </Dialog>
