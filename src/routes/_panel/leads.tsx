@@ -18,7 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Copy } from "lucide-react";
+import { Copy, Phone, Send, Mail } from "lucide-react";
 
 export const Route = createFileRoute("/_panel/leads")({
   component: AdminLeadsPage,
@@ -28,6 +28,12 @@ const STATUS_LABELS: Record<string, string> = {
   new: "Новая",
   in_progress: "В работе",
   done: "Закрыта",
+};
+
+const STATUS_STYLES: Record<string, string> = {
+  new: "bg-primary/15 text-primary border-primary/30",
+  in_progress: "bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30",
+  done: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30",
 };
 
 const PERIOD_DAYS: Record<string, number | null> = {
@@ -49,7 +55,7 @@ function AdminLeadsPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("leads")
-        .select("id,name,telegram,email,message,status,source,created_at,product_id,products(title)")
+        .select("id,name,phone,telegram,email,message,status,source,created_at,product_id,products(title)")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data ?? [];
@@ -80,7 +86,7 @@ function AdminLeadsPage() {
     if (search.trim()) {
       const q = search.trim().toLowerCase();
       list = list.filter((l: any) =>
-        [l.name, l.telegram, l.email, l.message].some((v) => v?.toLowerCase().includes(q)),
+        [l.name, l.phone, l.telegram, l.email, l.message].some((v) => v?.toLowerCase().includes(q)),
       );
     }
     return list;
@@ -88,8 +94,10 @@ function AdminLeadsPage() {
 
   return (
     <div>
-      <h2 className="text-xl font-semibold tracking-tight">Заявки</h2>
-      <p className="text-sm text-muted-foreground">Новые заявки от посетителей сайта.</p>
+      <div>
+        <h2 className="text-2xl font-semibold tracking-tight">Заявки</h2>
+        <p className="mt-1 text-sm text-muted-foreground">Новые заявки от посетителей сайта.</p>
+      </div>
 
       <div className="mt-4 grid gap-2 sm:grid-cols-4">
         <Input placeholder="Поиск…" value={search} onChange={(e) => setSearch(e.target.value)} />
@@ -120,22 +128,33 @@ function AdminLeadsPage() {
         {filtered.map((l: any) => (
           <article
             key={l.id}
-            className="cursor-pointer rounded-2xl border border-border bg-card p-5 transition hover:border-foreground/20"
+            className="cursor-pointer rounded-2xl border border-border bg-card/60 p-5 backdrop-blur transition hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5"
             onClick={() => setActive(l)}
           >
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <div className="font-semibold flex items-center gap-2">
                   {l.name}
-                  {l.status === "new" && (
-                    <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] uppercase tracking-wider text-primary">
-                      Новая
-                    </span>
-                  )}
+                  <span className={`rounded-full border px-2 py-0.5 text-[10px] uppercase tracking-wider ${STATUS_STYLES[l.status] ?? ""}`}>
+                    {STATUS_LABELS[l.status] ?? l.status}
+                  </span>
                 </div>
                 <div className="mt-0.5 flex flex-wrap gap-3 text-sm text-muted-foreground">
-                  {l.telegram && <span>{l.telegram}</span>}
-                  {l.email && <span>{l.email}</span>}
+                  {l.phone && (
+                    <a href={`tel:${l.phone}`} onClick={(e) => e.stopPropagation()} className="inline-flex items-center gap-1 hover:text-foreground">
+                      <Phone className="h-3.5 w-3.5" /> {l.phone}
+                    </a>
+                  )}
+                  {l.telegram && (
+                    <span className="inline-flex items-center gap-1">
+                      <Send className="h-3.5 w-3.5" /> {l.telegram}
+                    </span>
+                  )}
+                  {l.email && (
+                    <a href={`mailto:${l.email}`} onClick={(e) => e.stopPropagation()} className="inline-flex items-center gap-1 hover:text-foreground">
+                      <Mail className="h-3.5 w-3.5" /> {l.email}
+                    </a>
+                  )}
                   <span>{new Date(l.created_at).toLocaleString("ru-RU")}</span>
                 </div>
               </div>
@@ -182,6 +201,9 @@ function AdminLeadsPage() {
               <div className="text-xs text-muted-foreground">
                 {new Date(active.created_at).toLocaleString("ru-RU")} · Источник: {active.source}
               </div>
+              {active.phone && (
+                <Row label="Телефон" value={active.phone} onCopy={copy} />
+              )}
               {active.telegram && (
                 <Row label="Telegram" value={active.telegram} onCopy={copy} />
               )}
