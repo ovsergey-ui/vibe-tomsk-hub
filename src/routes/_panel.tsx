@@ -107,7 +107,6 @@ function AdminLayout() {
             </nav>
           </div>
           <div className="flex items-center gap-2">
-            <ThemeToggle />
             <Button variant="outline" size="sm" onClick={signOut} className="rounded-xl">
               Выйти
             </Button>
