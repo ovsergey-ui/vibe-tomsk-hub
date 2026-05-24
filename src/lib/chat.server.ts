@@ -83,10 +83,29 @@ export async function callAI(messages: ChatMessage[], systemPrompt: string): Pro
       { role: "system", content: systemPrompt },
       ...messages
         .filter((m) => m.role !== "system")
-        .map((m) => ({
-          role: m.role === "admin" ? "assistant" : m.role,
-          content: m.role === "admin" ? `[Сообщение администратора]: ${m.content}` : m.content,
-        })),
+        .map((m) => {
+          const role = m.role === "admin" ? "assistant" : m.role;
+          if (m.role === "admin") {
+            return { role, content: `[Сообщение администратора]: ${m.content}` };
+          }
+          if (m.role === "user") {
+            // Detect ![image](url) markdown; build multimodal content.
+            const imgRegex = /!\[[^\]]*\]\((https?:\/\/[^\s)]+)\)/g;
+            const urls: string[] = [];
+            const text = m.content.replace(imgRegex, (_, url) => {
+              urls.push(url);
+              return "";
+            }).trim();
+            if (urls.length === 0) return { role, content: m.content };
+            const parts: Array<Record<string, unknown>> = urls.map((url) => ({
+              type: "image_url",
+              image_url: { url },
+            }));
+            parts.push({ type: "text", text: text || "Что ты видишь на картинке? Подбери подходящее решение из каталога." });
+            return { role, content: parts };
+          }
+          return { role, content: m.content };
+        }),
     ],
     tools: [
       {
