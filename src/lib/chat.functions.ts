@@ -87,7 +87,10 @@ export const getChatHistory = createServerFn({ method: "POST" })
 
 const sendInput = z.object({
   sessionId: z.string().uuid(),
-  content: z.string().trim().min(1).max(4000),
+  content: z.string().trim().max(4000).optional().default(""),
+  imageUrl: z.string().url().max(2000).optional().nullable(),
+}).refine((d) => (d.content && d.content.length > 0) || !!d.imageUrl, {
+  message: "Сообщение или картинка обязательны",
 });
 
 export const sendChatMessage = createServerFn({ method: "POST" })
@@ -102,9 +105,12 @@ export const sendChatMessage = createServerFn({ method: "POST" })
     if (session.status === "closed") throw new Error("Чат закрыт");
 
     const now = new Date().toISOString();
+    const storedContent = data.imageUrl
+      ? `![image](${data.imageUrl})${data.content ? `\n${data.content}` : ""}`
+      : data.content;
     await supabaseAdmin
       .from("chat_messages")
-      .insert({ session_id: session.id, role: "user", content: data.content });
+      .insert({ session_id: session.id, role: "user", content: storedContent });
     await supabaseAdmin
       .from("chat_sessions")
       .update({ last_message_at: now, updated_at: now })
