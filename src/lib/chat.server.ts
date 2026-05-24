@@ -39,6 +39,7 @@ const SYSTEM_PROMPT_BASE = `Ты — AI-консультант студии toms
 Правила:
 - Отвечай кратко, по-русски, дружелюбно и по делу.
 - Опирайся на каталог продуктов (передан ниже). Если клиент описывает задачу — предложи подходящее решение и кратко объясни почему.
+- Если клиент прислал картинку (скриншот сайта, интерфейса, схему, пример) — внимательно изучи её, опиши кратко что видишь и подбери максимально близкое решение из каталога. Если ничего не подходит — предложи индивидуальную разработку.
 - Если задача (включая разработку сайта) не покрыта готовым решением — предложи индивидуальную разработку. Задай 1–2 уточняющих вопроса: какой тип сайта/проекта, цель, есть ли дизайн и контент, ориентир по срокам.
 - Когда клиент готов оставить заявку — вызови инструмент create_lead с product_id (если подходит готовое решение) или без него (для индивидуальной разработки, в том числе сайтов). В message кратко опиши, что нужно клиенту.
 - Если клиент задаёт сложный вопрос вне твоей компетенции, просит позвать менеджера/администратора, или ты не можешь помочь — вызови escalate_to_admin с причиной. В ответе клиенту скажи: «Передаю ваш вопрос администратору, с вами скоро свяжутся».
@@ -82,10 +83,29 @@ export async function callAI(messages: ChatMessage[], systemPrompt: string): Pro
       { role: "system", content: systemPrompt },
       ...messages
         .filter((m) => m.role !== "system")
-        .map((m) => ({
-          role: m.role === "admin" ? "assistant" : m.role,
-          content: m.role === "admin" ? `[Сообщение администратора]: ${m.content}` : m.content,
-        })),
+        .map((m) => {
+          const role = m.role === "admin" ? "assistant" : m.role;
+          if (m.role === "admin") {
+            return { role, content: `[Сообщение администратора]: ${m.content}` };
+          }
+          if (m.role === "user") {
+            // Detect ![image](url) markdown; build multimodal content.
+            const imgRegex = /!\[[^\]]*\]\((https?:\/\/[^\s)]+)\)/g;
+            const urls: string[] = [];
+            const text = m.content.replace(imgRegex, (_, url) => {
+              urls.push(url);
+              return "";
+            }).trim();
+            if (urls.length === 0) return { role, content: m.content };
+            const parts: Array<Record<string, unknown>> = urls.map((url) => ({
+              type: "image_url",
+              image_url: { url },
+            }));
+            parts.push({ type: "text", text: text || "Что ты видишь на картинке? Подбери подходящее решение из каталога." });
+            return { role, content: parts };
+          }
+          return { role, content: m.content };
+        }),
     ],
     tools: [
       {
