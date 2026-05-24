@@ -7,8 +7,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { verifyAdminLogin } from "@/lib/admin-auth.functions";
 import { toast } from "sonner";
 
-const ADMIN_EMAIL = "sergovinst@gmail.com";
-
 export const Route = createFileRoute("/admin")({
   head: () => ({
     meta: [
@@ -27,10 +25,6 @@ function AdminLoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (email.trim().toLowerCase() !== ADMIN_EMAIL) {
-      toast.error("Доступ запрещён.");
-      return;
-    }
     setLoading(true);
     const { data, error } = await supabase.auth.signInWithPassword({
       email: email.trim(),
@@ -41,9 +35,15 @@ function AdminLoginPage() {
       toast.error("Неверный логин или пароль.");
       return;
     }
-    const role = await verifyAdminLogin({ data: { userId: data.user.id } });
+    let isAdmin = false;
+    try {
+      const role = await verifyAdminLogin({ data: { userId: data.user.id } });
+      isAdmin = role.isAdmin;
+    } catch {
+      isAdmin = false;
+    }
     setLoading(false);
-    if (!role.isAdmin) {
+    if (!isAdmin) {
       await supabase.auth.signOut();
       toast.error("У аккаунта нет прав администратора.");
       return;
