@@ -84,34 +84,48 @@ function AdminLayout() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border pb-4">
-        <div className="flex items-center gap-6">
-          <h1 className="text-lg font-semibold tracking-tight">Админ-панель</h1>
-          <nav className="flex items-center gap-4 text-sm text-muted-foreground">
-            <Link to="/products" className="hover:text-foreground" activeProps={{ className: "text-foreground" }}>
-              Решения
-            </Link>
-            <Link to="/categories" className="hover:text-foreground" activeProps={{ className: "text-foreground" }}>
-              Категории
-            </Link>
-            <Link to="/leads" className="hover:text-foreground inline-flex items-center gap-1.5" activeProps={{ className: "text-foreground" }}>
-              Заявки
-              {newLeadsCount ? (
-                <span className="rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-semibold leading-none text-primary-foreground">
-                  {newLeadsCount}
-                </span>
-              ) : null}
-            </Link>
-          </nav>
+    <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/20">
+      <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
+        <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-border bg-card/60 px-5 py-3 backdrop-blur-xl shadow-sm">
+          <div className="flex items-center gap-6 overflow-x-auto">
+            <h1 className="shrink-0 text-base font-semibold tracking-tight">
+              <span className="text-primary">●</span> Админ
+            </h1>
+            <nav className="flex shrink-0 items-center gap-1 text-sm">
+              <NavLink to="/dashboard">Обзор</NavLink>
+              <NavLink to="/products">Решения</NavLink>
+              <NavLink to="/categories">Категории</NavLink>
+              <NavLink to="/leads">
+                Заявки
+                {newLeadsCount ? (
+                  <span className="ml-1.5 rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-semibold leading-none text-primary-foreground">
+                    {newLeadsCount}
+                  </span>
+                ) : null}
+              </NavLink>
+            </nav>
+          </div>
+          <Button variant="outline" size="sm" onClick={signOut} className="rounded-xl">
+            Выйти
+          </Button>
         </div>
-        <Button variant="outline" size="sm" onClick={signOut}>
-          Выйти
-        </Button>
-      </div>
-      <div className="mt-8">
-        <Outlet />
+        <div className="mt-8">
+          <Outlet />
+        </div>
       </div>
     </div>
+  );
+}
+
+function NavLink({ to, children }: { to: string; children: React.ReactNode }) {
+  return (
+    <Link
+      to={to}
+      className="inline-flex items-center rounded-xl px-3 py-1.5 text-muted-foreground transition hover:bg-muted/50 hover:text-foreground"
+      activeProps={{ className: "bg-muted text-foreground" }}
+      activeOptions={{ exact: to === "/dashboard" }}
+    >
+      {children}
+    </Link>
   );
 }

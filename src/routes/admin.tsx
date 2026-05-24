@@ -49,7 +49,7 @@ function AdminLoginPage() {
       return;
     }
     toast.success("Вход выполнен");
-    navigate({ to: "/products" });
+    navigate({ to: "/dashboard" });
   };
 
   return (

@@ -384,13 +384,6 @@ function ProductForm({
         <Field label="Что входит (по пункту в строке)">
           <Textarea rows={4} value={featuresText} onChange={(e) => setFeaturesText(e.target.value)} />
         </Field>
-        <Field label="Обложка (URL, необязательно)">
-          <Input
-            value={form.cover_url ?? ""}
-            onChange={(e) => setForm({ ...form, cover_url: e.target.value || null })}
-            placeholder="https://…"
-          />
-        </Field>
         <div className="flex items-center gap-3">
           <Switch
             checked={form.is_active}

@@ -4,6 +4,7 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 const submitLeadInput = z.object({
   name: z.string().trim().min(1).max(200),
+  phone: z.string().trim().min(6).max(32).nullable().optional(),
   telegram: z.string().trim().max(120).nullable().optional(),
   email: z.string().trim().email().max(255).nullable().optional(),
   message: z.string().trim().max(5000).optional().default(""),
@@ -43,8 +44,9 @@ export const submitLead = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const telegram = data.telegram?.trim() || null;
     const email = data.email?.trim() || null;
-    if (!telegram && !email) {
-      throw new Error("Укажите Telegram или email");
+    const phone = data.phone?.trim() || null;
+    if (!telegram && !email && !phone) {
+      throw new Error("Укажите телефон, Telegram или email");
     }
 
     let productTitle: string | null = null;
@@ -61,6 +63,7 @@ export const submitLead = createServerFn({ method: "POST" })
       .from("leads")
       .insert({
         name: data.name,
+        phone,
         telegram,
         email,
         message: data.message || "",
@@ -79,6 +82,7 @@ export const submitLead = createServerFn({ method: "POST" })
     const parts = [
       `<b>🆕 Новая заявка</b>`,
       `<b>Имя:</b> ${escapeHtml(data.name)}`,
+      phone ? `<b>Телефон:</b> ${escapeHtml(phone)}` : null,
       telegram ? `<b>Telegram:</b> ${escapeHtml(telegram)}` : null,
       email ? `<b>Email:</b> ${escapeHtml(email)}` : null,
       productTitle ? `<b>Решение:</b> ${escapeHtml(productTitle)}` : null,

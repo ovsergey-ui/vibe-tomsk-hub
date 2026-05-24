@@ -22,6 +22,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProductsSlugRouteImport } from './routes/products.$slug'
 import { Route as PanelProductsRouteImport } from './routes/_panel/products'
 import { Route as PanelLeadsRouteImport } from './routes/_panel/leads'
+import { Route as PanelDashboardRouteImport } from './routes/_panel/dashboard'
 import { Route as PanelCategoriesRouteImport } from './routes/_panel/categories'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
@@ -88,6 +89,11 @@ const PanelLeadsRoute = PanelLeadsRouteImport.update({
   path: '/leads',
   getParentRoute: () => PanelRoute,
 } as any)
+const PanelDashboardRoute = PanelDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => PanelRoute,
+} as any)
 const PanelCategoriesRoute = PanelCategoriesRouteImport.update({
   id: '/categories',
   path: '/categories',
@@ -105,6 +111,7 @@ export interface FileRoutesByFullPath {
   '/privacy': typeof PrivacyRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/categories': typeof PanelCategoriesRoute
+  '/dashboard': typeof PanelDashboardRoute
   '/leads': typeof PanelLeadsRoute
   '/products': typeof PanelProductsRoute
   '/products/$slug': typeof ProductsSlugRoute
@@ -120,6 +127,7 @@ export interface FileRoutesByTo {
   '/privacy': typeof PrivacyRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/categories': typeof PanelCategoriesRoute
+  '/dashboard': typeof PanelDashboardRoute
   '/leads': typeof PanelLeadsRoute
   '/products': typeof PanelProductsRoute
   '/products/$slug': typeof ProductsSlugRoute
@@ -137,6 +145,7 @@ export interface FileRoutesById {
   '/privacy': typeof PrivacyRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/_panel/categories': typeof PanelCategoriesRoute
+  '/_panel/dashboard': typeof PanelDashboardRoute
   '/_panel/leads': typeof PanelLeadsRoute
   '/_panel/products': typeof PanelProductsRoute
   '/products/$slug': typeof ProductsSlugRoute
@@ -154,6 +163,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/sitemap.xml'
     | '/categories'
+    | '/dashboard'
     | '/leads'
     | '/products'
     | '/products/$slug'
@@ -169,6 +179,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/sitemap.xml'
     | '/categories'
+    | '/dashboard'
     | '/leads'
     | '/products'
     | '/products/$slug'
@@ -185,6 +196,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/sitemap.xml'
     | '/_panel/categories'
+    | '/_panel/dashboard'
     | '/_panel/leads'
     | '/_panel/products'
     | '/products/$slug'
@@ -297,6 +309,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PanelLeadsRouteImport
       parentRoute: typeof PanelRoute
     }
+    '/_panel/dashboard': {
+      id: '/_panel/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof PanelDashboardRouteImport
+      parentRoute: typeof PanelRoute
+    }
     '/_panel/categories': {
       id: '/_panel/categories'
       path: '/categories'
@@ -309,12 +328,14 @@ declare module '@tanstack/react-router' {
 
 interface PanelRouteChildren {
   PanelCategoriesRoute: typeof PanelCategoriesRoute
+  PanelDashboardRoute: typeof PanelDashboardRoute
   PanelLeadsRoute: typeof PanelLeadsRoute
   PanelProductsRoute: typeof PanelProductsRoute
 }
 
 const PanelRouteChildren: PanelRouteChildren = {
   PanelCategoriesRoute: PanelCategoriesRoute,
+  PanelDashboardRoute: PanelDashboardRoute,
   PanelLeadsRoute: PanelLeadsRoute,
   PanelProductsRoute: PanelProductsRoute,
 }
@@ -337,13 +358,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
