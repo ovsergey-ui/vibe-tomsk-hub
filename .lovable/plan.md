@@ -1,92 +1,66 @@
-## Что обнаружено при анализе
+## План: AI чат-бот на сайте + панель оператора
 
-**Критический баг — заявки и каталог.** Сетевой лог показывает 403 от Supabase: `permission denied for function has_role` при запросах к `products`. То же сейчас может ронять и сохранение заявок (RLS-политики продуктов/категорий вызывают `has_role`, и роль `anon` не имеет EXECUTE на функцию). Из-за этого:
-- публичный сайт не грузит каталог,
-- форма заявки падает на любом запросе, который рядом дергает products/categories.
+### 1. База данных
 
-**Форма заявки** не содержит телефон и обязательного согласия с политикой; в БД `leads` нет колонки `phone`.
+Создать две таблицы:
 
-**Форма продукта** в админке имеет дубль поля «Обложка» (загрузка файла + URL внизу) — путаница.
+- `chat_sessions` — `id`, `name`, `phone` (уникальный), `consent_at`, `status` (`bot` / `escalated` / `closed`), `created_at`, `updated_at`, `last_message_at`.
+- `chat_messages` — `id`, `session_id` (FK), `role` (`user` / `assistant` / `admin` / `system`), `content`, `created_at`.
 
-**Учёт заявок** — есть бейдж «новые», но нет цельной картины: статусы переключаются вручную внутри модалки, нет дашборда с метриками.
+RLS:
 
-**Визуал админки** не совпадает с сайтом: плоский top-nav, нет карточек/градиентов/мягких теней, цифры и таблицы без акцентов. Сайт у нас тёмный, премиальный — админка должна это поддержать.
+- Публичный INSERT и SELECT по `id` сессии (id хранится в localStorage клиента, выступает токеном). Админы — полный доступ через `has_role('admin')`.
+- Включить Realtime для `chat_messages` и `chat_sessions`, чтобы клиент и админ видели новые сообщения мгновенно.
 
-## План изменений
+### 2. Виджет на сайте (правый нижний угол)
 
-### 1. Миграция БД
+Новый компонент `ChatWidget` встраивается в `__root.tsx` (рядом с `LeadDialog`).
 
-- `GRANT EXECUTE ON FUNCTION public.has_role(uuid, app_role) TO anon, authenticated` — лечит 403 на публичных страницах и в форме заявки.
-- В `leads` добавить колонку `phone text`.
-- Обновить INSERT-политику `Anyone can create leads`: разрешить телефон как третий вариант контакта (`telegram IS NOT NULL OR email IS NOT NULL OR phone IS NOT NULL`) и добавить чек длины.
+- Плавающая круглая кнопка с иконкой бота.
+- При клике — карточка чата.
+- Первый шаг: форма «Имя + Телефон + чекбокс согласия с политикой конфиденциальности» (обязательно). После отправки — серверная функция `startChatSession`:
+  - ищет сессию по телефону → если есть, подгружает историю;
+  - иначе создаёт новую, шлёт приветственное сообщение от бота.
+  - id сессии сохраняется в `localStorage` (быстрый повторный вход без формы).
+- Второй шаг: лента сообщений + поле ввода. Подписка на Realtime для новых сообщений (от админа или бота).
 
-### 2. Форма заявки (`LeadDialog.tsx` + `src/lib/schema.ts` + `leads.functions.ts`)
+### 3. AI-логика бота (Lovable AI Gateway, `google/gemini-2.5-flash`)
 
-- Добавить поле **Имя (обяз.)**, **Телефон (обяз.)**, **Email (необяз.)**, **Telegram (необяз.)**, сообщение.
-- Добавить **обязательный чекбокс** «Согласен с политикой конфиденциальности» со ссылкой на `/privacy`. Без галки кнопка submit задизейблена + текст ошибки.
-- Обновить `leadSchema` (zod): `phone` обязателен, маска/regex для RU-номера, длины полей.
-- Обновить server fn `submitLead` чтобы принимать и сохранять `phone`.
+Серверная функция `sendChatMessage`:
 
-### 3. Чистка формы продукта (`_panel/products.tsx`)
+1. Сохраняет сообщение пользователя.
+2. Собирает контекст: системный промпт + актуальный каталог `products` (title, summary, price_from, slug) + последние ~20 сообщений.
+3. Системный промпт: бот консультирует по продуктам tomsk.ai, помогает оставить заявку (готовое решение или индивидуальная разработка). Поддерживается tool calling:
+  - `create_lead` — сохраняет заявку в `leads` (`source = "chatbot"`, привязка к `product_id`, сообщение из обсуждения). Уведомление в Telegram через существующий helper.
+  - `escalate_to_admin` — переводит сессию в `status = escalated`, бот отвечает «Передаю ваш вопрос администратору, пожалуйста ожидайте, с вами скоро свяжутся», в Telegram уходит уведомление о новом тикете.
+4. Если сессия уже `escalated` — бот молчит, отвечает админ.
 
-- Убрать второе поле «Обложка (URL)» внизу формы — оставить только `ImageUploader`, который и так возвращает URL.
-- Мелкий рефакторинг: вынести `ProductForm` в отдельный файл `src/components/admin/ProductForm.tsx`.
+### 4. Админка (`/_panel/chats`)
 
-### 4. Учёт заявок (`_panel/leads.tsx`)
+Новая страница:
 
-- В таблице показывать **телефон** колонкой, кликабельный `tel:`.
-- Быстрая смена статуса прямо в строке (Select: новая / в работе / закрыта) — без открытия модалки.
-- Цветные бейджи статусов (semantic tokens).
-- Кнопка «Скопировать все контакты» в карточке заявки.
+- Список всех сессий (новые сверху, бейдж «тикет» для `escalated`, индикатор непрочитанных).
+- При выборе — переписка + поле ввода для админа.
+- Серверная функция `sendAdminMessage` сохраняет сообщение с `role = "admin"` (после этого бот замолкает), клиент видит через Realtime.
+- Кнопки «Закрыть тикет» (`status = closed`) и «Вернуть боту» (`status = bot`).
+- Ссылка «Чаты» добавляется в навигацию `_panel.tsx`.
 
-### 5. Дашборд админки (новый роут `_panel/index.tsx`)
+### 5. Уведомления в Telegram
 
-- 4 карточки-метрики: новые заявки за 7 дней, всего заявок, активных решений, скрытых.
-- Блок «Последние 5 заявок» со ссылкой на полный список.
-- Блок «Топ категорий» по числу продуктов.
-- В навигации сделать первым пунктом «Обзор».
+Переиспользуется существующий `TELEGRAM_BOT_TOKEN` / `TELEGRAM_CHAT_ID`. Отправляется при эскалации и при создании заявки из чата.
 
-### 6. Стиль админки под сайт (`_panel.tsx` + страницы)
+### Файлы
 
-Без правок дизайна публичного сайта — только админка.
+- Миграция: `chat_sessions`, `chat_messages`, RLS, realtime.
+- `src/components/site/ChatWidget.tsx` (+ подкомпоненты формы и ленты).
+- `src/lib/chat.functions.ts` — `startChatSession`, `getChatHistory`, `sendChatMessage`, `sendAdminMessage`, `escalateChat`, `closeChat`.
+- `src/lib/chat.server.ts` — вызов Lovable AI Gateway, сборка контекста, tool dispatch.
+- `src/routes/_panel/chats.tsx` — UI оператора.
+- Правки: `src/routes/__root.tsx` (монтаж виджета), `src/routes/_panel.tsx` (пункт навигации).
 
-- Шапку панели обернуть в «стеклянную» карточку с `bg-card/60 backdrop-blur border border-border rounded-2xl`, отделить от контента вертикальным отступом.
-- Таблицы: `rounded-2xl` карточка, шапка `bg-muted/40`, hover-строки `hover:bg-muted/30`, плотность строк 56px, типографика `tracking-tight`.
-- Кнопки и инпуты — единые радиусы (`rounded-xl`), фокус-кольца через `--ring`.
-- Бейдж новых заявок — `bg-primary text-primary-foreground` (как акценты сайта), статусы — мягкие пастельные подложки через токены.
-- Адаптив: nav сворачивается в горизонтальный скролл на мобильных, кнопка «Выйти» уходит в `…`-меню.
-- Использовать только semantic tokens из `src/styles.css` — никаких хардкод-цветов.
+### Технические детали
 
-### Что НЕ входит в этот заход
-
-- Уведомления о смене статуса клиенту (email/Telegram бота).
-- Экспорт в CSV/Excel.
-- История изменений заявки.
-- Редизайн публичного сайта.
-
-## Технические детали
-
-Файлы:
-
-- **Создаём:** `src/routes/_panel/index.tsx`, `src/components/admin/ProductForm.tsx`, новая миграция SQL.
-- **Правим:** `src/lib/schema.ts`, `src/lib/leads.functions.ts`, `src/components/site/LeadDialog.tsx`, `src/routes/_panel.tsx`, `src/routes/_panel/leads.tsx`, `src/routes/_panel/products.tsx`.
-
-SQL миграции:
-
-```sql
-GRANT EXECUTE ON FUNCTION public.has_role(uuid, app_role) TO anon, authenticated;
-
-ALTER TABLE public.leads ADD COLUMN phone text;
-
-DROP POLICY "Anyone can create leads" ON public.leads;
-CREATE POLICY "Anyone can create leads" ON public.leads
-  FOR INSERT TO public
-  WITH CHECK (
-    char_length(name) BETWEEN 1 AND 200
-    AND char_length(COALESCE(message, '')) <= 5000
-    AND char_length(COALESCE(phone, '')) <= 32
-    AND (telegram IS NOT NULL OR email IS NOT NULL OR phone IS NOT NULL)
-  );
-```
-
-Подтверди план — и я приступаю к исполнению.
+- Lovable AI: `LOVABLE_API_KEY` уже есть, модель `google/gemini-2.5-flash`, tool calling для `create_lead` / `escalate_to_admin`.
+- Идентификация клиента — по `session_id` в `localStorage` + телефону. Без паролей.
+- Согласие с политикой обязательно (чекбокс + блокировка кнопки).
+- Валидация Zod на сервере и клиенте.
