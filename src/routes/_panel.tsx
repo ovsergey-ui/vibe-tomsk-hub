@@ -92,7 +92,7 @@ function AdminLayout() {
               <span className="text-primary">●</span> Админ
             </h1>
             <nav className="flex shrink-0 items-center gap-1 text-sm">
-              <NavLink to="/panel">Обзор</NavLink>
+              <NavLink to="/dashboard">Обзор</NavLink>
               <NavLink to="/products">Решения</NavLink>
               <NavLink to="/categories">Категории</NavLink>
               <NavLink to="/leads">
@@ -123,7 +123,7 @@ function NavLink({ to, children }: { to: string; children: React.ReactNode }) {
       to={to}
       className="inline-flex items-center rounded-xl px-3 py-1.5 text-muted-foreground transition hover:bg-muted/50 hover:text-foreground"
       activeProps={{ className: "bg-muted text-foreground" }}
-      activeOptions={{ exact: to === "/panel" }}
+      activeOptions={{ exact: to === "/dashboard" }}
     >
       {children}
     </Link>
