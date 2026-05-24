@@ -37,6 +37,7 @@ function AdminLoginPage() {
     }
     let isAdmin = false;
     try {
+      await supabase.auth.getUser();
       const role = await verifyAdminLogin({ data: { userId: data.user.id } });
       isAdmin = role.isAdmin;
     } catch {

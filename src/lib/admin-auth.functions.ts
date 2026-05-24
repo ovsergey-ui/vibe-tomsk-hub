@@ -7,7 +7,6 @@ const verifyAdminLoginInput = z.object({
   userId: z.string().uuid(),
 });
 
-async function resolveAdminAccess(userId: string) {
 export const verifyAdminLogin = createServerFn({ method: "POST" })
   .inputValidator((data) => verifyAdminLoginInput.parse(data))
   .handler(async ({ data }) => {
