@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { getCurrentAdminAccess } from "@/lib/admin-auth.functions";
 import { Button } from "@/components/ui/button";
-import { ThemeToggle } from "@/components/site/ThemeToggle";
+
 
 export const Route = createFileRoute("/_panel")({
   head: () => ({
@@ -107,7 +107,6 @@ function AdminLayout() {
             </nav>
           </div>
           <div className="flex items-center gap-2">
-            <ThemeToggle />
             <Button variant="outline" size="sm" onClick={signOut} className="rounded-xl">
               Выйти
             </Button>
