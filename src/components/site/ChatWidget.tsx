@@ -348,6 +348,12 @@ export function ChatWidget() {
 function MessageBubble({ message }: { message: Msg }) {
   const isUser = message.role === "user";
   const isAdmin = message.role === "admin";
+  const imgRegex = /!\[[^\]]*\]\((https?:\/\/[^\s)]+)\)/g;
+  const images: string[] = [];
+  const text = message.content.replace(imgRegex, (_, url) => {
+    images.push(url);
+    return "";
+  }).trim();
   return (
     <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
       <div
@@ -364,7 +370,12 @@ function MessageBubble({ message }: { message: Msg }) {
             Администратор
           </div>
         )}
-        {message.content}
+        {images.map((url) => (
+          <a key={url} href={url} target="_blank" rel="noreferrer" className="block">
+            <img src={url} alt="вложение" className="mb-1 max-h-60 rounded-lg object-cover" />
+          </a>
+        ))}
+        {text}
       </div>
     </div>
   );
