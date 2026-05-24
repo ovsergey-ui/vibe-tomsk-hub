@@ -239,7 +239,10 @@ export const sendAdminMessage = createServerFn({ method: "POST" })
       role: "admin",
       content: data.content,
     });
-    const update: Record<string, unknown> = { last_message_at: now, updated_at: now };
+    const update: { last_message_at: string; updated_at: string; status?: string } = {
+      last_message_at: now,
+      updated_at: now,
+    };
     if (session.status === "bot") update.status = "escalated";
     await supabaseAdmin.from("chat_sessions").update(update).eq("id", data.sessionId);
     return { ok: true };
