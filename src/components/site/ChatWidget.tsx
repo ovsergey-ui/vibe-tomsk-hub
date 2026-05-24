@@ -57,23 +57,34 @@ export function ChatWidget() {
     let cancelled = false;
     const load = async () => {
       try {
-        const lastId = messages.length ? messages[messages.length - 1].id : null;
+        // Use last REAL message id; ignore optimistic tmp-* ids so the server
+        // cursor doesn't fall back to "return everything" and cause duplicates.
+        let lastRealId: string | null = null;
+        for (let i = messages.length - 1; i >= 0; i--) {
+          if (!messages[i].id.startsWith("tmp-")) {
+            lastRealId = messages[i].id;
+            break;
+          }
+        }
         const res = await historyFn({
-          data: { sessionId, afterId: lastId ?? undefined },
+          data: { sessionId, afterId: lastRealId ?? undefined },
         });
         if (cancelled) return;
         if (res.messages.length) {
           setMessages((prev) => {
             const ids = new Set(prev.map((m) => m.id));
-            const next = [...prev];
+            // Drop optimistic tmp-* user messages that now exist in the
+            // incoming batch with the same content.
+            const incomingUserContent = new Set(
+              res.messages.filter((m) => m.role === "user").map((m) => m.content),
+            );
+            const next = prev.filter(
+              (m) =>
+                !(m.id.startsWith("tmp-") && m.role === "user" && incomingUserContent.has(m.content)),
+            );
             for (const m of res.messages) if (!ids.has(m.id)) next.push(m as Msg);
             return next;
           });
-        }
-        // if no messages yet locally, load all
-        if (!messages.length && !res.messages.length) {
-          const full = await historyFn({ data: { sessionId } });
-          if (!cancelled) setMessages(full.messages as Msg[]);
         }
       } catch (err) {
         console.error(err);
