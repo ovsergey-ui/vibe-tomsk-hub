@@ -12,6 +12,7 @@ import appCss from "../styles.css?url";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { LeadDialog } from "@/components/site/LeadDialog";
+import { ChatWidget } from "@/components/site/ChatWidget";
 import { Toaster } from "@/components/ui/sonner";
 
 function NotFoundComponent() {
@@ -177,6 +178,7 @@ function RootComponent() {
         <Footer />
       </div>
       <LeadDialog />
+      <ChatWidget />
       <Toaster richColors position="top-center" />
     </QueryClientProvider>
   );
