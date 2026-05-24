@@ -15,12 +15,15 @@ export function Header() {
   return (
     <header className="sticky top-0 z-40 border-b border-border/70 bg-background/85 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
-        <Link to="/" className="flex items-center gap-2 font-semibold tracking-tight">
-          <span className="grid h-8 w-8 place-items-center rounded-lg bg-foreground text-background font-bold">
-            T
-          </span>
-          <span className="text-base">tomsk.ai</span>
-        </Link>
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          <Link to="/" className="flex items-center gap-2 font-semibold tracking-tight">
+            <span className="grid h-8 w-8 place-items-center rounded-lg bg-foreground text-background font-bold">
+              T
+            </span>
+            <span className="text-base">tomsk.ai</span>
+          </Link>
+        </div>
         <nav className="hidden items-center gap-7 text-sm text-muted-foreground md:flex">
           {NAV.map((item) => (
             <Link
