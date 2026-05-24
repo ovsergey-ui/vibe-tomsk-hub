@@ -1,6 +1,8 @@
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { useLeadDialog } from "@/lib/lead-dialog";
+import { ThemeToggle } from "@/components/site/ThemeToggle";
+
 
 const NAV = [
   { to: "/catalog", label: "Решения" },
