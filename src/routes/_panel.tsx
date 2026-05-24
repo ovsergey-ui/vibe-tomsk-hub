@@ -1,5 +1,6 @@
 import { createFileRoute, Outlet, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { getCurrentAdminAccess } from "@/lib/admin-auth.functions";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,19 @@ export const Route = createFileRoute("/_panel")({
 function AdminLayout() {
   const navigate = useNavigate();
   const [state, setState] = useState<"loading" | "ok" | "denied">("loading");
+
+  const { data: newLeadsCount } = useQuery({
+    queryKey: ["admin-leads-new-count"],
+    enabled: state === "ok",
+    refetchInterval: 30_000,
+    queryFn: async () => {
+      const { count } = await supabase
+        .from("leads")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "new");
+      return count ?? 0;
+    },
+  });
 
   useEffect(() => {
     let cancelled = false;
@@ -78,8 +92,16 @@ function AdminLayout() {
             <Link to="/products" className="hover:text-foreground" activeProps={{ className: "text-foreground" }}>
               Решения
             </Link>
-            <Link to="/leads" className="hover:text-foreground" activeProps={{ className: "text-foreground" }}>
+            <Link to="/categories" className="hover:text-foreground" activeProps={{ className: "text-foreground" }}>
+              Категории
+            </Link>
+            <Link to="/leads" className="hover:text-foreground inline-flex items-center gap-1.5" activeProps={{ className: "text-foreground" }}>
               Заявки
+              {newLeadsCount ? (
+                <span className="rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-semibold leading-none text-primary-foreground">
+                  {newLeadsCount}
+                </span>
+              ) : null}
             </Link>
           </nav>
         </div>

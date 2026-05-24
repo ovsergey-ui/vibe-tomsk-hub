@@ -22,6 +22,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProductsSlugRouteImport } from './routes/products.$slug'
 import { Route as PanelProductsRouteImport } from './routes/_panel/products'
 import { Route as PanelLeadsRouteImport } from './routes/_panel/leads'
+import { Route as PanelCategoriesRouteImport } from './routes/_panel/categories'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
@@ -87,6 +88,11 @@ const PanelLeadsRoute = PanelLeadsRouteImport.update({
   path: '/leads',
   getParentRoute: () => PanelRoute,
 } as any)
+const PanelCategoriesRoute = PanelCategoriesRouteImport.update({
+  id: '/categories',
+  path: '/categories',
+  getParentRoute: () => PanelRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -98,6 +104,7 @@ export interface FileRoutesByFullPath {
   '/offer': typeof OfferRoute
   '/privacy': typeof PrivacyRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/categories': typeof PanelCategoriesRoute
   '/leads': typeof PanelLeadsRoute
   '/products': typeof PanelProductsRoute
   '/products/$slug': typeof ProductsSlugRoute
@@ -112,6 +119,7 @@ export interface FileRoutesByTo {
   '/offer': typeof OfferRoute
   '/privacy': typeof PrivacyRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/categories': typeof PanelCategoriesRoute
   '/leads': typeof PanelLeadsRoute
   '/products': typeof PanelProductsRoute
   '/products/$slug': typeof ProductsSlugRoute
@@ -128,6 +136,7 @@ export interface FileRoutesById {
   '/offer': typeof OfferRoute
   '/privacy': typeof PrivacyRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/_panel/categories': typeof PanelCategoriesRoute
   '/_panel/leads': typeof PanelLeadsRoute
   '/_panel/products': typeof PanelProductsRoute
   '/products/$slug': typeof ProductsSlugRoute
@@ -144,6 +153,7 @@ export interface FileRouteTypes {
     | '/offer'
     | '/privacy'
     | '/sitemap.xml'
+    | '/categories'
     | '/leads'
     | '/products'
     | '/products/$slug'
@@ -158,6 +168,7 @@ export interface FileRouteTypes {
     | '/offer'
     | '/privacy'
     | '/sitemap.xml'
+    | '/categories'
     | '/leads'
     | '/products'
     | '/products/$slug'
@@ -173,6 +184,7 @@ export interface FileRouteTypes {
     | '/offer'
     | '/privacy'
     | '/sitemap.xml'
+    | '/_panel/categories'
     | '/_panel/leads'
     | '/_panel/products'
     | '/products/$slug'
@@ -285,15 +297,24 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PanelLeadsRouteImport
       parentRoute: typeof PanelRoute
     }
+    '/_panel/categories': {
+      id: '/_panel/categories'
+      path: '/categories'
+      fullPath: '/categories'
+      preLoaderRoute: typeof PanelCategoriesRouteImport
+      parentRoute: typeof PanelRoute
+    }
   }
 }
 
 interface PanelRouteChildren {
+  PanelCategoriesRoute: typeof PanelCategoriesRoute
   PanelLeadsRoute: typeof PanelLeadsRoute
   PanelProductsRoute: typeof PanelProductsRoute
 }
 
 const PanelRouteChildren: PanelRouteChildren = {
+  PanelCategoriesRoute: PanelCategoriesRoute,
   PanelLeadsRoute: PanelLeadsRoute,
   PanelProductsRoute: PanelProductsRoute,
 }
