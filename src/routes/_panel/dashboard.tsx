@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Inbox, Package, EyeOff, TrendingUp } from "lucide-react";
 
-export const Route = createFileRoute("/_panel/")({
+export const Route = createFileRoute("/_panel/dashboard")({
   component: DashboardPage,
 });
 
