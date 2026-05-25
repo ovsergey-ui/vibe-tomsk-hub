@@ -15,13 +15,13 @@ import { ProductCard } from "@/components/site/ProductCard";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "tomsk.ai — AI-решения и автоматизация для бизнеса в Томске" },
+      { title: "tomsk.ai — AI-решения и автоматизация в Томске" },
       {
         name: "description",
         content:
           "Telegram-боты, AI-инструменты и автоматизация. Запускаем решения для бизнеса в Томске за дни, а не месяцы.",
       },
-      { property: "og:title", content: "tomsk.ai — AI-решения и автоматизация для бизнеса" },
+      { property: "og:title", content: "tomsk.ai — AI-решения и автоматизация" },
       {
         property: "og:description",
         content: "Telegram-боты, AI-инструменты и автоматизация для быстрых запусков.",
@@ -117,7 +117,7 @@ function HomePage() {
               AI-студия · Томск
             </span>
             <h1 className="mt-6 text-4xl font-semibold tracking-tight text-foreground sm:text-5xl md:text-6xl">
-              AI-решения и автоматизация для бизнеса
+              AI-решения и автоматизация
             </h1>
             <p className="mt-5 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
               Telegram-боты, mini-сервисы и AI-инструменты для быстрого запуска идей и автоматизации процессов.
